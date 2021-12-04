@@ -29,11 +29,9 @@ class SiameseNetworkDataset(Dataset):
 
 
         img0 = Image.open(image1_path)
-        print("shape",img0.size)
         img1 = Image.open(image2_path)
         img0 = img0.convert("L")
         img1 = img1.convert("L")
-        print("shape",img0.size)
         
         
         if self.should_invert:
@@ -50,7 +48,7 @@ class SiameseNetworkDataset(Dataset):
     
     def __len__(self):
         return len(self.train_df)
-    
+
 #             #we need to make sure approx 50% of images are in the same class
 #         should_get_same_class = random.randint(0,1) 
 #         if should_get_same_class:
@@ -62,7 +60,7 @@ class SiameseNetworkDataset(Dataset):
 #         else:
 #             while True:
 #                 #keep looping till a different class image is found
-                
+
 #                 img1_tuple = random.choice(self.imageFolderDataset.imgs) 
 #                 if img0_tuple[1] !=img1_tuple[1]:
 #                     break
@@ -107,8 +105,8 @@ def generate_csv(directory,total_number=0):
                                 quotechar='|', quoting=csv.QUOTE_MINIMAL)
         spamwriter.writerows(pairsT)
         spamwriter.writerows(pairsF)
-        
-        
+
+
 if __name__ == '__main__':
     import config
     generate_csv(config.training_dir)
@@ -127,4 +125,4 @@ if __name__ == '__main__':
 #             rows.append([os.path.join(directory, pair[0]), os.path.join(directory + "_forg", pair[1]), '1'])
 #     if 0 < total_number < len(rows):
 #         rows = random.sample(rows, total_number)
-        
+
