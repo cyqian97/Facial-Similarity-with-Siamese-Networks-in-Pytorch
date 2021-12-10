@@ -49,24 +49,11 @@ class SiameseNetworkDataset(Dataset):
     def __len__(self):
         return len(self.train_df)
 
-#             #we need to make sure approx 50% of images are in the same class
-#         should_get_same_class = random.randint(0,1) 
-#         if should_get_same_class:
-#             while True:
-#                 #keep looping till the same class image is found
-#                 img1_tuple = random.choice(self.imageFolderDataset.imgs) 
-#                 if img0_tuple[1]==img1_tuple[1]:
-#                     break
-#         else:
-#             while True:
-#                 #keep looping till a different class image is found
-
-#                 img1_tuple = random.choice(self.imageFolderDataset.imgs) 
-#                 if img0_tuple[1] !=img1_tuple[1]:
-#                     break
-
-def generate_csv(directory,total_number=0):
+def generate_csv(directory,csv_path,total_number=0):
     #load all images
+    print("Data directory: ",directory)
+    if os.path.exists(os.path.join(directory,".ipynb_checkpoints")):
+        os.rmdir(os.path.join(directory,".ipynb_checkpoints"))
     folder_dataset = ImageFolder(root=directory)
     
     #put the pathes of images with the different classes 
@@ -100,7 +87,7 @@ def generate_csv(directory,total_number=0):
     pairsT = random.sample(pairsT, l_min)
     pairsF = random.sample(pairsF, l_min)
     
-    with open('train_data.csv', 'w', newline='') as csvfile:
+    with open(csv_path,'w', newline='') as csvfile:
         spamwriter = csv.writer(csvfile, delimiter=',',
                                 quotechar='|', quoting=csv.QUOTE_MINIMAL)
         spamwriter.writerows(pairsT)
@@ -109,7 +96,8 @@ def generate_csv(directory,total_number=0):
 
 if __name__ == '__main__':
     import config
-    generate_csv(config.training_dir)
+    generate_csv(config.training_dir,config.training_csv)
+    generate_csv(config.testing_dir,config.testing_csv)
 #     sigT = []
 #     sigF = []
 #     dir_list  = os.listdir(directory)
@@ -125,4 +113,6 @@ if __name__ == '__main__':
 #             rows.append([os.path.join(directory, pair[0]), os.path.join(directory + "_forg", pair[1]), '1'])
 #     if 0 < total_number < len(rows):
 #         rows = random.sample(rows, total_number)
+
+
 

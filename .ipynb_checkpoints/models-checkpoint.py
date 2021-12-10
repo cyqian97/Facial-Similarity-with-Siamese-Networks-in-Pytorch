@@ -2,9 +2,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class SiameseNetwork(nn.Module):
+# +
+class network1(nn.Module):
     def __init__(self):
-        super(SiameseNetwork, self).__init__()
+        super().__init__()
         self.cnn1 = nn.Sequential(
             nn.ReflectionPad2d(1),
             nn.Conv2d(1, 4, kernel_size=3),
@@ -39,7 +40,20 @@ class SiameseNetwork(nn.Module):
         output = self.fc1(output)
         return output
 
+
+# -
+
+class SiameseNetwork(network1):
+    def __init__(self):
+        super().__init__()
     def forward(self, input1, input2):
         output1 = self.forward_once(input1)
         output2 = self.forward_once(input2)
         return output1, output2
+
+
+import random
+
+random.randint(1,40)
+
+

@@ -1,3 +1,5 @@
 .idea/
 __pycache__/
 state_dict/
+.ipynb_checkpoints/
+.gitignore
