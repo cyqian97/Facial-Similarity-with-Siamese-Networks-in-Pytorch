@@ -104,6 +104,3 @@ def inferenceSiamese(net,criterion,dataloader):
         return data_loss, data_er
 
 
-"s"+"str{:} {}".format(0.1231235,1)
-
-

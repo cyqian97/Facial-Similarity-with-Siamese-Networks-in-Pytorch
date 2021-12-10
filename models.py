@@ -31,7 +31,7 @@ class network1(nn.Module):
             nn.Linear(500, 500),
             nn.ReLU(inplace=True),
 
-            nn.Linear(500, 5))
+            nn.Linear(500, 36))
 
     def forward_once(self, x):
         output = self.cnn1(x)
@@ -49,15 +49,8 @@ class SiameseNetwork(network1):
         return output1, output2
 
 
-class ClassicNetwork(network1):
+class CNN(network1):
     def __init__(self):
         super().__init__()
     def forward(self,input1):
         return self.forward_once(input1)
-
-
-import random
-
-random.randint(1,40)
-
-

@@ -14,17 +14,17 @@ from torch.utils.data import DataLoader,Dataset
 
 class SiameseNetworkDataset(Dataset):
     
-    def __init__(self,training_dir,training_csv,transform=None,should_invert=True):        
+    def __init__(self,data_csv,transform=None,should_invert=True):        
         # used to prepare the labels and images pathes
-        self.train_df = pd.read_csv(training_csv)
-        self.training_dir = training_dir    
+        self.data_csv = pd.read_csv(data_csv)
+#         self.directory = directory    
         self.transform = transform
         self.should_invert = should_invert
         
     def __getitem__(self,index):
         # getting the image path
-        image1_path = self.train_df.iat[index, 0]
-        image2_path = self.train_df.iat[index, 1]
+        image1_path = self.data_csv.iat[index, 0]
+        image2_path = self.data_csv.iat[index, 1]
 
 
         img0 = Image.open(image1_path)
@@ -42,13 +42,44 @@ class SiameseNetworkDataset(Dataset):
             img1 = self.transform(img1)
             
         return (img0, img1 , torch.from_numpy(
-                np.array([int(self.train_df.iat[index, 2])], dtype=np.float)
+                np.array([int(self.data_csv.iat[index, 2])], dtype=np.float)
             ))
     
     def __len__(self):
-        return len(self.train_df)
+        return len(self.data_csv)
 
-def generate_csv(directory,csv_path,total_number=0):
+class CNNkDataset(Dataset):
+    
+    def __init__(self,data_csv,transform=None,should_invert=True):        
+        # used to prepare the labels and images pathes
+        self.data_csv = pd.read_csv(data_csv)
+        self.transform = transform
+        self.should_invert = should_invert
+        
+    def __getitem__(self,index):
+        # getting the image path
+        image0_path = self.data_csv.iat[index,0]
+
+
+        img0 = Image.open(image0_path)
+        img0 = img0.convert("L")
+        
+        
+        if self.should_invert:
+            img0 = invert(img0)
+
+        if self.transform is not None:
+            img0 = self.transform(img0)
+            
+        return (img0, torch.from_numpy(
+                np.array([self.data_csv.iat[index,1]], dtype=np.float)
+            ))
+    
+    def __len__(self):
+        return len(self.folder_dataset)
+
+
+def generate_csv_oneshot(directory,csv_path,total_number=0):
     #load all images
     print("Data directory: ",directory)
     if os.path.exists(os.path.join(directory,".ipynb_checkpoints")):
@@ -97,23 +128,13 @@ def generate_csv(directory,csv_path,total_number=0):
 
 if __name__ == '__main__':
     import config
-    generate_csv(config.training_dir,config.siamese_training_csv)
-    generate_csv(config.testing_dir,config.siamese_testing_csv)
-#     sigT = []
-#     sigF = []
-#     dir_list  = os.listdir(directory)
-#     dir_list.sort()
-#     for directory in dir_list[0:-1:2]:
-#         for root, dirs, files in os.walk(os.path.join(config.training_dir, directory)):
-#             sigT = deepcopy(files)
-#         for root, dirs, files in os.walk(os.path.join(config.training_dir, directory + "_forg")):
-#             sigF = deepcopy(files)
-#         for pair in itertools.combinations(sigT, 2):
-#             rows.append([os.path.join(directory, pair[0]), os.path.join(directory, pair[1]), '0'])
-#         for pair in itertools.product(sigT, sigF):
-#             rows.append([os.path.join(directory, pair[0]), os.path.join(directory + "_forg", pair[1]), '1'])
-#     if 0 < total_number < len(rows):
-#         rows = random.sample(rows, total_number)
+#     generate_csv_oneshot(config.training_dir,config.siamese_training_csv)
+#     generate_csv_oneshot(config.testing_dir,config.siamese_testing_csv) 
+    folder_dataset = ImageFolder(root=config.testing_dir)
+    print(folder_dataset.classes)
+    print(folder_dataset.class_to_idx)
+    print(folder_dataset.imgs[0][1])
+    print(len(folder_dataset))
 
 
 
