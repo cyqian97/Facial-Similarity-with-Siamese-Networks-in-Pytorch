@@ -3,7 +3,7 @@ from os.path import join
 training_dir = join("..","..","datasets","AT&T Database of Faces","faces","training")
 testing_dir = join("..","..","datasets","AT&T Database of Faces","faces","testing")
 training_csv = join("..","..","datasets","AT&T Database of Faces","faces","training","train_data.csv")
-testing_csv = join("..","..","datasets","AT&T Database of Faces","faces","training","test_data.csv")
+testing_csv = join("..","..","datasets","AT&T Database of Faces","faces","testing","test_data.csv")
 train_batch_size = 40
 train_number_epochs = 20
 learning_rate = 0.0005

@@ -12,7 +12,6 @@ from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader,Dataset
 
 
-
 class SiameseNetworkDataset(Dataset):
     
     def __init__(self,training_dir,training_csv,transform=None,should_invert=True):        
@@ -68,7 +67,9 @@ def generate_csv(directory,csv_path,total_number=0):
             data_list.append(deepcopy(temp))
             temp = []
             temp.append(img_path)
-            
+
+    data_list.append(deepcopy(temp))
+    
     # Generate all pairs with same and different labels
     pairsT = []
     pairsF = []
