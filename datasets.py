@@ -97,8 +97,8 @@ def generate_csv(directory,csv_path,total_number=0):
 
 if __name__ == '__main__':
     import config
-    generate_csv(config.training_dir,config.training_csv)
-    generate_csv(config.testing_dir,config.testing_csv)
+    generate_csv(config.training_dir,config.siamese_training_csv)
+    generate_csv(config.testing_dir,config.siamese_testing_csv)
 #     sigT = []
 #     sigF = []
 #     dir_list  = os.listdir(directory)

@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# +
 class network1(nn.Module):
     def __init__(self):
         super().__init__()
@@ -41,8 +40,6 @@ class network1(nn.Module):
         return output
 
 
-# -
-
 class SiameseNetwork(network1):
     def __init__(self):
         super().__init__()
@@ -50,6 +47,13 @@ class SiameseNetwork(network1):
         output1 = self.forward_once(input1)
         output2 = self.forward_once(input2)
         return output1, output2
+
+
+class ClassicNetwork(network1):
+    def __init__(self):
+        super().__init__()
+    def forward(self,input1):
+        return self.forward_once(input1)
 
 
 import random

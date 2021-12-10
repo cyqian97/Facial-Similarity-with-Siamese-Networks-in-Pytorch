@@ -1,13 +1,19 @@
+# +
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+import config
+
+
+# -
 
 class ContrastiveLoss(nn.Module):
     """
     Contrastive loss function.
     """
 
-    def __init__(self, margin=2.0):
+    def __init__(self, margin=config.margin):
         super(ContrastiveLoss, self).__init__()
         self.margin = margin
 

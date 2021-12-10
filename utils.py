@@ -17,10 +17,10 @@ def show_plots(*args,legends = []):
         plt.plot(data)
     if legends:
         plt.legend(legends)
+    plt.yscale("log")
     plt.show()
 
 
-# +
 def decision_stub(train_data,verbose=False):
     F_star = math.inf
     m = len(train_data)
@@ -91,13 +91,11 @@ def decision_stub(train_data,verbose=False):
                 np.median(train_data[train_data[:,-1]==-1,j_star])
             ))
             
-#             print(
-#                 "j_star = %d\ttheta_star = %f\tpolorization = %d\tEmpirical Error = %f" % (
-#                     j_star, theta_star, b_star, F_star / m))
+            print(
+                "Feature = %d\tThreshold = %f\tPolorization = %d" % (
+                    j_star, theta_star, b_star))
     return F_star / m
 
-
-# -
 
 def sortKeyGenerator(i):
     def sortKey(v):
