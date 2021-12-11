@@ -128,7 +128,7 @@ def generate_csv_siamese(directory,csv_path,total_number=0):
         spamwriter.writerows(pairsF)
 
 
-def generate_csv_compare(directory,siamese_csv_path,cnn_csv_path,test_csv_path,total_number=0):
+def generate_csv_compare(directory,siamese_csv_path,cnn_csv_path,test_csv_path,num_per_class=-1):
 
     print("Data directory: ",directory)
     
@@ -160,7 +160,7 @@ def generate_csv_compare(directory,siamese_csv_path,cnn_csv_path,test_csv_path,t
     pairsF = []
     for i in range(len(data_list)):
         # Generate csv for classic cnn training
-        for data in data_list[i][1:-1]:
+        for data in data_list[i][1:num_per_class]:
             
             cnn_data.append([data,str(i),folder_dataset.classes[i]])
         
@@ -168,16 +168,15 @@ def generate_csv_compare(directory,siamese_csv_path,cnn_csv_path,test_csv_path,t
         test_data.append([data_list[i][-1],str(i),folder_dataset.classes[i]])
         
         # Generate all pairs with same and different labels
-        for pair in itertools.combinations(data_list[i][1:-1], 2):
+        for pair in itertools.combinations(data_list[i][1:num_per_class], 2):
             pairsT.append([pair[0], pair[1], '0'])
         for j in range(i+1,len(data_list)):
-             for pair in itertools.product(data_list[i][1:-1], data_list[j][1:-1]):
+             for pair in itertools.product(data_list[i][1:num_per_class], data_list[j][1:num_per_class]):
                     pairsF.append([pair[0], pair[1], '1'])
     
     # Select same number of pairs in both cases
     l_min = min(len(pairsT),len(pairsF))
-    if 0 < total_number < 2*l_min:
-        l_min = round(total_number/2)      
+    
     pairsT = random.sample(pairsT, l_min)
     pairsF = random.sample(pairsF, l_min)
     

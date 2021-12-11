@@ -39,7 +39,7 @@ def trainSiamese(net,criterion,optimizer,scheduler,train_dataloader,
         valid_loss_history.append(valid_loss)
         
         
-        print("Epoch-%d\t Train loss: %.4f\t Valid loss: %.4f\t Valid error: %.4f"
+        print("Epoch-%d\t Train loss: %.4e\t Valid loss: %.4e\t Valid error: %.4f"
               %(epoch,loss_contrastive.item(),valid_loss,valid_er))
     
     
@@ -112,7 +112,7 @@ def trainCNN(net,criterion,optimizer,scheduler,train_dataloader,
 #         valid_loss_history.append(valid_loss)
         
         
-        print("Epoch-%d\t Train loss: %.4f"
+        print("Epoch-%d\t Train loss: %.4e"
               %(epoch,loss_CrossEntropy.item()))
     
     

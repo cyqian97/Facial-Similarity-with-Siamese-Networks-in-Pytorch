@@ -13,7 +13,7 @@ compare_test_csv = join("..","..","datasets","AT&T Database of Faces","faces","t
 
 
 train_batch_size = 128
-train_number_epochs = 60
+train_number_epochs = 90
 learning_rate = 0.0005
 weight_decay = 0.0005
 step_size=15
