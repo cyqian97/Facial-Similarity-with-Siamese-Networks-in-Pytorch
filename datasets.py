@@ -71,9 +71,7 @@ class CNNDataset(Dataset):
         if self.transform is not None:
             img0 = self.transform(img0)
             
-        return (img0, torch.from_numpy(
-                np.array([self.data_csv.iat[index,1]], dtype=np.float)
-            ))
+        return (img0, torch.tensor(int(self.data_csv.iat[index,1])))
     
     def __len__(self):
         return len(self.data_csv)

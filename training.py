@@ -83,6 +83,65 @@ def trainSiamese(net,criterion,optimizer,scheduler,train_dataloader,
     return net, train_loss_history, valid_loss_history,dict_name
 
 
+# +
+def trainCNN(net,criterion,optimizer,scheduler,train_dataloader,
+                 number_epochs,do_show=False):
+    counter = []
+    train_loss_history = [] 
+    loss_min = math.inf
+    
+    dict_name = ''
+    
+    for epoch in range(0,number_epochs):
+#         print("Epoch ",epoch," training")
+        for i, data in enumerate(tqdm(train_dataloader),0):
+            img0, label = data
+            img0, label = img0.cuda(), label.cuda()
+            optimizer.zero_grad()
+            output1 = net(img0)
+            loss_CrossEntropy = criterion(output1,label)
+            loss_CrossEntropy.backward()
+            optimizer.step()
+        scheduler.step()
+        
+        train_loss_history.append(loss_CrossEntropy.item())
+    
+#         # Empirical error on the validation set
+#         print("Epoch ",epoch," validating")
+#         valid_loss = inferenceCNN(net,criterion,valid_dataloader)
+#         valid_loss_history.append(valid_loss)
+        
+        
+        print("Epoch-%d\t Train loss: %.4f"
+              %(epoch,loss_CrossEntropy.item()))
+    
+    
+        # Save state_dict if there is any improvement
+        if epoch>0:
+            if loss_CrossEntropy.item() < loss_min:
+                if dict_name:
+                    os.remove(join("state_dict",dict_name))
+                    
+                loss_min = loss_CrossEntropy.item()
+                d = optimizer.state_dict()['param_groups'][0]
+                dict_name = "cnn "+str(optimizer).split(' ')[0]+" lr-{:.2e} wd-{:.2e} bs-{} train_loss-{:.2e}.pth".format(
+                    d['lr'],d['weight_decay'],train_dataloader.batch_size, loss_CrossEntropy.item())
+                save(net.state_dict(),join("state_dict",dict_name))
+                print("new model saved")
+                
+        else:
+            loss_min = loss_CrossEntropy.item()
+            
+    if do_show:
+        show_plots(train_loss_history,legends = ["train_loss"])
+        
+    
+
+    return net, train_loss_history, dict_name
+
+
+# -
+
 def inferenceSiamese(net,criterion,dataloader):
         data_distance = np.zeros((dataloader.__len__(),2))
         data_loss = 0
@@ -99,4 +158,14 @@ def inferenceSiamese(net,criterion,dataloader):
         data_er = decision_stub(data_distance.tolist(),verbose=True)
         return data_loss, data_er
 
-
+# +
+# def inferenceCNN(net,criterion,dataloader):
+#         data_loss = 0
+#         for i, data in enumerate(tqdm(dataloader),0):
+#             img0, label = data
+#             img0, label = img0.cuda(), label.cuda()
+#             output1= net(img0)
+#             data_loss += criterion.func(output1, output2, label).detach().cpu().numpy()
+#         data_loss /= dataloader.__len__()
+        
+#         return data_loss
