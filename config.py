@@ -7,6 +7,11 @@ testing_dir = join("..","..","datasets","AT&T Database of Faces","faces","testin
 siamese_training_csv = join("..","..","datasets","AT&T Database of Faces","faces","training","siamese_train_data.csv")
 siamese_testing_csv = join("..","..","datasets","AT&T Database of Faces","faces","testing","siamese_test_data.csv")
 
+compare_siamese_csv = join("..","..","datasets","AT&T Database of Faces","faces","training","compare_siamese.csv")
+compare_cnn_csv = join("..","..","datasets","AT&T Database of Faces","faces","training","compare_cnn.csv")
+compare_test_csv = join("..","..","datasets","AT&T Database of Faces","faces","training","compare_test.csv")
+
+
 train_batch_size = 128
 train_number_epochs = 60
 learning_rate = 0.0005

@@ -45,30 +45,26 @@ def trainSiamese(net,criterion,optimizer,scheduler,train_dataloader,
     
         # Save state_dict if there is any improvement
         if epoch>0:
+            d = optimizer.state_dict()['param_groups'][0]
+            dict_name = str(optimizer).split(' ')[0]+" lr-{:.2e} wd-{:.2e} bs-{} train_loss-{:.2e} valid_loss-{:.2e} valid_error-{:.2e}.pth".format(
+                d['lr'],d['weight_decay'],train_dataloader.batch_size, loss_contrastive.item(),valid_loss,valid_er)
             if valid_er < valid_er_min:
                 valid_er_min = valid_er
-                d = optimizer.state_dict()['param_groups'][0]
-                dict_name = str(optimizer).split(' ')[0]+" lr-{:.2e} wd-{:.2e} bs-{} train_loss-{:.2e} valid_loss-{:.2e} valid_error-{:.2e}.pth".format(
-                    d['lr'],d['weight_decay'],train_dataloader.batch_size, loss_contrastive.item(),valid_loss,valid_er)
                 dict_names.append(dict_name)
                 save(net.state_dict(),join("state_dict",dict_name))
                 print("new model saved")            
             elif valid_loss < valid_loss_min:
                 valid_loss_min = valid_loss
-                d = optimizer.state_dict()['param_groups'][0]
-                dict_name = str(optimizer).split(' ')[0]+" lr-{:.2e} wd-{:.2e} bs-{} train_loss-{:.2e} valid_loss-{:.2e} valid_error-{:.2e}.pth".format(
-                    d['lr'],d['weight_decay'],train_dataloader.batch_size, loss_contrastive.item(),valid_loss,valid_er)
                 dict_names.append(dict_name)
                 save(net.state_dict(),join("state_dict",dict_name))
                 print("new model saved")            
             elif loss_contrastive.item() < loss_min:
                 loss_min = loss_contrastive.item()
-                d = optimizer.state_dict()['param_groups'][0]
-                dict_name = str(optimizer).split(' ')[0]+" lr-{:.2e} wd-{:.2e} bs-{} train_loss-{:.2e} valid_loss-{:.2e} valid_error-{:.2e}.pth".format(
-                    d['lr'],d['weight_decay'],train_dataloader.batch_size, loss_contrastive.item(),valid_loss,valid_er)
                 dict_names.append(dict_name)
                 save(net.state_dict(),join("state_dict",dict_name))
                 print("new model saved")
+                
+            # Delete unnecessary checkpoints    
             if (valid_er <= valid_er_min) and (valid_loss <= valid_loss_min) and (loss_contrastive.item() <= loss_min):
                 for sdict in dict_names[0:-1]:
                     os.remove(join("state_dict",sdict))

@@ -48,7 +48,7 @@ class SiameseNetworkDataset(Dataset):
     def __len__(self):
         return len(self.data_csv)
 
-class CNNkDataset(Dataset):
+class CNNDataset(Dataset):
     
     def __init__(self,data_csv,transform=None,should_invert=True):        
         # used to prepare the labels and images pathes
@@ -76,14 +76,18 @@ class CNNkDataset(Dataset):
             ))
     
     def __len__(self):
-        return len(self.folder_dataset)
+        return len(self.data_csv)
 
 
-def generate_csv_oneshot(directory,csv_path,total_number=0):
-    #load all images
+def generate_csv_siamese(directory,csv_path,total_number=0):
+    
     print("Data directory: ",directory)
+    
+    # Delete .ipynb_checkpoints folder because it confuses ImageFolder function
     if os.path.exists(os.path.join(directory,".ipynb_checkpoints")):
         os.rmdir(os.path.join(directory,".ipynb_checkpoints"))
+        
+    # load all images
     folder_dataset = ImageFolder(root=directory)
     
     #put the pathes of images with the different classes 
@@ -126,15 +130,80 @@ def generate_csv_oneshot(directory,csv_path,total_number=0):
         spamwriter.writerows(pairsF)
 
 
+def generate_csv_compare(directory,siamese_csv_path,cnn_csv_path,test_csv_path,total_number=0):
+
+    print("Data directory: ",directory)
+    
+    # Delete .ipynb_checkpoints folder because it confuses ImageFolder function
+    if os.path.exists(os.path.join(directory,".ipynb_checkpoints")):
+        os.rmdir(os.path.join(directory,".ipynb_checkpoints"))
+        
+    # load all images
+    folder_dataset = ImageFolder(root=directory)
+    
+    # put the pathes of images with the different classes 
+    data_list = []
+    temp = []
+    current_label = folder_dataset[0][1]
+    for img_path,label in folder_dataset.imgs:
+        if label==current_label:
+            temp.append(img_path)
+        else:
+            current_label = label
+            data_list.append(deepcopy(temp))
+            temp = []
+            temp.append(img_path)
+
+    data_list.append(deepcopy(temp))
+    
+    cnn_data = []
+    test_data = []
+    pairsT = []
+    pairsF = []
+    for i in range(len(data_list)):
+        # Generate csv for classic cnn training
+        for data in data_list[i][1:-1]:
+            
+            cnn_data.append([data,str(i),folder_dataset.classes[i]])
+        
+        # Pick the last image in each class to form a testing set
+        test_data.append([data_list[i][-1],str(i),folder_dataset.classes[i]])
+        
+        # Generate all pairs with same and different labels
+        for pair in itertools.combinations(data_list[i][1:-1], 2):
+            pairsT.append([pair[0], pair[1], '0'])
+        for j in range(i+1,len(data_list)):
+             for pair in itertools.product(data_list[i][1:-1], data_list[j][1:-1]):
+                    pairsF.append([pair[0], pair[1], '1'])
+    
+    # Select same number of pairs in both cases
+    l_min = min(len(pairsT),len(pairsF))
+    if 0 < total_number < 2*l_min:
+        l_min = round(total_number/2)      
+    pairsT = random.sample(pairsT, l_min)
+    pairsF = random.sample(pairsF, l_min)
+    
+    with open(test_csv_path,'w', newline='') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter=',',
+                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        spamwriter.writerows(test_data)
+    
+    with open(cnn_csv_path,'w', newline='') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter=',',
+                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        spamwriter.writerows(cnn_data)
+    
+    with open(siamese_csv_path,'w', newline='') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter=',',
+                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        spamwriter.writerows(pairsT)
+        spamwriter.writerows(pairsF)
+
+
 if __name__ == '__main__':
     import config
-#     generate_csv_oneshot(config.training_dir,config.siamese_training_csv)
-#     generate_csv_oneshot(config.testing_dir,config.siamese_testing_csv) 
-    folder_dataset = ImageFolder(root=config.testing_dir)
-    print(folder_dataset.classes)
-    print(folder_dataset.class_to_idx)
-    print(folder_dataset.imgs[0][1])
-    print(len(folder_dataset))
-
+#     generate_csv_siamese(config.training_dir,config.siamese_training_csv)
+#     generate_csv_siamese(config.testing_dir,config.siamese_testing_csv) 
+    generate_csv_compare(config.training_dir,config.compare_siamese_csv,config.compare_cnn_csv,config.compare_test_csv)
 
 
