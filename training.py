@@ -8,7 +8,7 @@ from torch.nn.functional import pairwise_distance
 from utils import show_plots,decision_stub
 
 def trainSiamese(net,criterion,optimizer,scheduler,train_dataloader,
-                 valid_dataloader,number_epochs,do_show=False):
+                 valid_dataloader,number_epochs,do_show=False,do_print=True):
     counter = []
     train_loss_history = [] 
     valid_loss_history = []
@@ -20,8 +20,8 @@ def trainSiamese(net,criterion,optimizer,scheduler,train_dataloader,
     dict_names = []
     
     for epoch in range(0,number_epochs):
-        print("Epoch ",epoch," training")
-        for i, data in enumerate(tqdm(train_dataloader),0):
+        if do_print:print("Epoch ",epoch," training")
+        for i, data in enumerate(train_dataloader,0):
             img0, img1 , label = data
             img0, img1 , label = img0.cuda(), img1.cuda() , label.cuda()
             optimizer.zero_grad()
@@ -34,13 +34,14 @@ def trainSiamese(net,criterion,optimizer,scheduler,train_dataloader,
         train_loss_history.append(loss_contrastive.item())
     
         # Empirical error on the validation set
-        print("Epoch ",epoch," validating")
-        valid_loss, valid_er = inferenceSiamese(net,criterion,valid_dataloader)
+        
+        if do_print:print("Epoch ",epoch," validating")
+        valid_loss, valid_er = inferenceSiamese(net,criterion,valid_dataloader,do_print = do_print)
         valid_loss_history.append(valid_loss)
         
         
-        print("Epoch-%d\t Train loss: %.4e\t Valid loss: %.4e\t Valid error: %.4f"
-              %(epoch,loss_contrastive.item(),valid_loss,valid_er))
+        if do_print:print("Epoch-%d\t Train loss: %.4e\t Valid loss: %.4e\t Valid error: %.4f"
+                            %(epoch,loss_contrastive.item(),valid_loss,valid_er))
     
     
         # Save state_dict if there is any improvement
@@ -50,23 +51,18 @@ def trainSiamese(net,criterion,optimizer,scheduler,train_dataloader,
                 d['lr'],d['weight_decay'],train_dataloader.batch_size, loss_contrastive.item(),valid_loss,valid_er)
             if valid_er < valid_er_min:
                 valid_er_min = valid_er
-                dict_names.append(dict_name)
                 save(net.state_dict(),join("state_dict",dict_name))
-                print("new model saved")            
+                dict_names.append(dict_name)
+                if do_print:print("new model saved")            
             elif valid_loss < valid_loss_min:
                 valid_loss_min = valid_loss
-                dict_names.append(dict_name)
                 save(net.state_dict(),join("state_dict",dict_name))
-                print("new model saved")            
-            elif loss_contrastive.item() < loss_min:
-                loss_min = loss_contrastive.item()
                 dict_names.append(dict_name)
-                save(net.state_dict(),join("state_dict",dict_name))
-                print("new model saved")
+                if do_print:print("new model saved")
                 
             # Delete unnecessary checkpoints    
-            if (valid_er <= valid_er_min) and (valid_loss <= valid_loss_min) and (loss_contrastive.item() <= loss_min):
-                for sdict in dict_names[0:-1]:
+            if (valid_er <= valid_er_min) and (valid_loss <= valid_loss_min):
+                for sdict in dict_names[1:-1]:
                     os.remove(join("state_dict",sdict))
                 dict_names = []
                 dict_names.append(dict_name)
@@ -80,12 +76,12 @@ def trainSiamese(net,criterion,optimizer,scheduler,train_dataloader,
         
     
 
-    return net, train_loss_history, valid_loss_history,dict_name
+    return net, train_loss_history, valid_loss_history,dict_names[-1]
 
 
 # +
 def trainCNN(net,criterion,optimizer,scheduler,train_dataloader,
-                 number_epochs,do_show=False):
+                 number_epochs,do_show=False,do_print=True):
     counter = []
     train_loss_history = [] 
     loss_min = math.inf
@@ -94,7 +90,7 @@ def trainCNN(net,criterion,optimizer,scheduler,train_dataloader,
     
     for epoch in range(0,number_epochs):
 #         print("Epoch ",epoch," training")
-        for i, data in enumerate(tqdm(train_dataloader),0):
+        for i, data in enumerate(train_dataloader,0):
             img0, label = data
             img0, label = img0.cuda(), label.cuda()
             optimizer.zero_grad()
@@ -112,8 +108,8 @@ def trainCNN(net,criterion,optimizer,scheduler,train_dataloader,
 #         valid_loss_history.append(valid_loss)
         
         
-        print("Epoch-%d\t Train loss: %.4e"
-              %(epoch,loss_CrossEntropy.item()))
+        if do_print:print("Epoch-%d\t Train loss: %.4e"
+                            %(epoch,loss_CrossEntropy.item()))
     
     
         # Save state_dict if there is any improvement
@@ -127,7 +123,7 @@ def trainCNN(net,criterion,optimizer,scheduler,train_dataloader,
                 dict_name = "cnn "+str(optimizer).split(' ')[0]+" lr-{:.2e} wd-{:.2e} bs-{} train_loss-{:.2e}.pth".format(
                     d['lr'],d['weight_decay'],train_dataloader.batch_size, loss_CrossEntropy.item())
                 save(net.state_dict(),join("state_dict",dict_name))
-                print("new model saved")
+                if do_print:print("new model saved")
                 
         else:
             loss_min = loss_CrossEntropy.item()
@@ -142,10 +138,10 @@ def trainCNN(net,criterion,optimizer,scheduler,train_dataloader,
 
 # -
 
-def inferenceSiamese(net,criterion,dataloader):
+def inferenceSiamese(net,criterion,dataloader,do_print = True):
         data_distance = np.zeros((dataloader.__len__(),2))
         data_loss = 0
-        for i, data in enumerate(tqdm(dataloader),0):
+        for i, data in enumerate(dataloader,0):
             img0, img1, label = data
             img0, img1, label = img0.cuda(), img1.cuda(), label.cuda()
             output1, output2 = net(img0, img1)
@@ -155,7 +151,7 @@ def inferenceSiamese(net,criterion,dataloader):
         data_loss /= dataloader.__len__()
         
         # Use decision stub to find the best threshhold
-        data_er = decision_stub(data_distance.tolist(),verbose=True)
+        data_er = decision_stub(data_distance.tolist(),verbose=do_print)
         return data_loss, data_er
 
 # +
