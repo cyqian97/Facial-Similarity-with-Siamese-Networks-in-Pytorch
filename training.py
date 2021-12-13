@@ -7,6 +7,7 @@ from os.path import join
 from torch.nn.functional import pairwise_distance
 from utils import show_plots,decision_stub
 
+# +
 def trainSiamese(net,criterion,optimizer,scheduler,train_dataloader,
                  valid_dataloader,number_epochs,do_show=False,do_print=True):
     counter = []
@@ -17,7 +18,8 @@ def trainSiamese(net,criterion,optimizer,scheduler,train_dataloader,
     valid_loss_min = math.inf
     loss_min = math.inf
     
-    dict_names = []
+#     dict_names = []
+    dict_name = ''
     
     for epoch in range(0,number_epochs):
         if do_print:print("Epoch ",epoch," training")
@@ -47,25 +49,29 @@ def trainSiamese(net,criterion,optimizer,scheduler,train_dataloader,
         # Save state_dict if there is any improvement
         if epoch>0:
             d = optimizer.state_dict()['param_groups'][0]
-            dict_name = str(optimizer).split(' ')[0]+" lr-{:.2e} wd-{:.2e} bs-{} train_loss-{:.2e} valid_loss-{:.2e} valid_error-{:.2e}.pth".format(
-                d['lr'],d['weight_decay'],train_dataloader.batch_size, loss_contrastive.item(),valid_loss,valid_er)
             if valid_er < valid_er_min:
                 valid_er_min = valid_er
+                if dict_name:os.remove(join("state_dict",dict_name))
+                dict_name = str(optimizer).split(' ')[0]+" lr-{:.2e} wd-{:.2e} bs-{} train_loss-{:.2e} valid_loss-{:.2e} valid_error-{:.2e}.pth".format(
+                    d['lr'],d['weight_decay'],train_dataloader.batch_size, loss_contrastive.item(),valid_loss,valid_er)
                 save(net.state_dict(),join("state_dict",dict_name))
-                dict_names.append(dict_name)
+#                 dict_names.append(dict_name)
                 if do_print:print("new model saved")            
             elif valid_loss < valid_loss_min:
                 valid_loss_min = valid_loss
+                if dict_name:os.remove(join("state_dict",dict_name))
+                dict_name = str(optimizer).split(' ')[0]+" lr-{:.2e} wd-{:.2e} bs-{} train_loss-{:.2e} valid_loss-{:.2e} valid_error-{:.2e}.pth".format(
+                    d['lr'],d['weight_decay'],train_dataloader.batch_size, loss_contrastive.item(),valid_loss,valid_er)
                 save(net.state_dict(),join("state_dict",dict_name))
-                dict_names.append(dict_name)
+#                 dict_names.append(dict_name)
                 if do_print:print("new model saved")
                 
             # Delete unnecessary checkpoints    
-            if (valid_er <= valid_er_min) and (valid_loss <= valid_loss_min):
-                for sdict in dict_names[1:-1]:
-                    os.remove(join("state_dict",sdict))
-                dict_names = []
-                dict_names.append(dict_name)
+#             if (valid_er <= valid_er_min) and (valid_loss <= valid_loss_min):
+#                 for sdict in dict_names[1:-1]:
+#                     os.remove(join("state_dict",sdict))
+#                 dict_names = []
+#                 dict_names.append(dict_name)
         else:
             loss_min = loss_contrastive.item()
             valid_er_min = valid_er
@@ -74,9 +80,10 @@ def trainSiamese(net,criterion,optimizer,scheduler,train_dataloader,
     if do_show:
         show_plots(train_loss_history,valid_loss_history,legends = ["train_loss","valid_loss"])
         
-    
+#     for sdict in dict_names[1:-1]:
+#         os.remove(join("state_dict",sdict))
 
-    return net, train_loss_history, valid_loss_history,dict_names[-1]
+    return net, train_loss_history, valid_loss_history,dict_name
 
 
 # +

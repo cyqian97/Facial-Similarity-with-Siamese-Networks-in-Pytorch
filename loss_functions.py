@@ -16,6 +16,7 @@ class ContrastiveLoss(nn.Module):
     def __init__(self, margin=config.margin):
         super(ContrastiveLoss, self).__init__()
         self.margin = margin
+        print("margin = ",self.margin)
 
     def forward(self, output1, output2, label):
         euclidean_distance = F.pairwise_distance(output1, output2, keepdim = True)
